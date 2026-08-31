@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMate AI</title>
+    <link rel="stylesheet" href="Style.css">
+    <link rel="stylesheet" href="ai-chat.css">
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+</head>
+<body>
+    <section id="auth-screen" class="auth-screen" aria-label="StudyMate sign in">
+        <div class="auth-card">
+            <span class="eyebrow">STUDYMATE AI</span>
+            <h1>Smarter study starts here.</h1>
+            <p>Sign in to access your AI study companion, saved chats, and learning tools.</p>
+            <form id="auth-form" class="auth-form">
+                <label>Student name<input id="auth-name" maxlength="60" placeholder="Your full name" required></label>
+                <label>School email<input id="auth-email" type="email" placeholder="name@school.edu" required></label>
+                <button type="submit">Enter StudyMate</button>
+            </form>
+            <small>This browser prototype keeps your profile on this device.</small>
+        </div>
+    </section>
+
+    <main class="app-shell" id="app-shell" hidden>
+        <aside class="app-menu" aria-label="StudyMate menu">
+            <div class="menu-brand">StudyMate</div>
+            <button class="menu-button" type="button" data-view="dashboard">Dashboard</button>
+            <button class="menu-button active" type="button" data-view="chat">+ New chat</button>
+            <button class="menu-button" type="button" data-view="history">History</button>
+            <button class="menu-button" type="button" data-view="projects">Projects</button>
+            <button class="menu-button" type="button" data-view="schedule">Schedule</button>
+            <button class="menu-button" type="button" data-view="toolkit">Study toolkit</button>
+            <button class="menu-button" type="button" data-view="progress">Progress</button>
+            <button class="menu-button" type="button" data-view="downloads">Downloads</button>
+            <button class="menu-button" type="button" data-view="studio">Photo studio</button>
+            <button id="sign-out-button" class="menu-button sign-out" type="button">Sign out</button>
+        </aside>
+
+        <section id="dashboard-view" class="tool-view dashboard-view">
+            <span class="eyebrow">COMMAND CENTRAL</span>
+            <h2>Welcome back, <span id="student-name">Student</span>.</h2>
+            <p>Continue learning with one organized workspace for questions, documents, and practice.</p>
+            <div class="metric-grid">
+                <article class="metric-card"><span>Saved chats</span><strong id="chat-count">0</strong></article><article class="metric-card"><span>Study projects</span><strong id="project-count">0</strong></article><article class="metric-card"><span>Upcoming sessions</span><strong id="session-count">0</strong></article><article class="metric-card"><span>Quiz accuracy</span><strong id="accuracy-count">—</strong></article>
+            </div>
+            <div class="dashboard-columns"><article class="dashboard-panel"><h3>Quick start</h3><button class="dashboard-action" data-go="chat">Ask StudyMate</button><button class="dashboard-action" data-go="toolkit">Create a quiz</button><button class="dashboard-action" data-go="schedule">Plan a session</button></article><article class="dashboard-panel"><h3>Learning tip</h3><p>Use active recall: turn your notes into flashcards or a short quiz, then revisit the topics you miss.</p></article></div>
+        </section>
+
+        <section class="chat-container" id="chat-view">
+            <header>
+                <div class="header-row">
+                    <button id="mobile-menu-button" type="button" aria-label="Open menu">☰</button>
+                    <div>
+                        <h1>StudyMate AI</h1>
+                        <p>“Your AI-Powered Companion for Smarter Learning.”</p>
+                    </div>
+                    <button id="new-chat-button" type="button" title="Start a new chat">+ New</button>
+                </div>
+            </header>
+
+            <div id="chatbox" class="chat-box" aria-live="polite">
+                <div class="message bot-message">Hello! I'm StudyMate AI. How can I help you today?</div>
+            </div>
+
+            <div class="input-area">
+                <input id="file-input" type="file" accept=".pdf,.docx,.txt,.md,.csv,.json,.js,.html,.css,.py,.java,.c,.cpp" hidden>
+                <label id="file-button" class="attachment-button" for="file-input" title="Attach a document" aria-label="Attach a document">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m20.5 11.5-8.69 8.69a6 6 0 0 1-8.49-8.49L12.1 2.9a4 4 0 1 1 5.66 5.66l-8.7 8.69a2 2 0 1 1-2.83-2.83l8-8" />
+                    </svg>
+                    <span class="attachment-tooltip">Attach files</span>
+                </label>
+                <button id="voice-button" class="icon-button" type="button" title="Voice message" aria-label="Start voice message">Mic</button>
+                <input id="user-input" type="text" placeholder="Ask StudyMate anything..." autocomplete="off">
+                <button id="send-button" type="button">Send</button>
+            </div>
+            <div class="voice-tools" aria-label="AI voice settings">
+                <span class="voice-tools-label">AI voice</span>
+                <select id="tts-voice" aria-label="Choose AI voice"><option>Loading voices...</option></select>
+                <label for="tts-rate">Speed</label>
+                <input id="tts-rate" type="range" min="0.8" max="1.2" step="0.1" value="1" aria-label="Voice speed">
+                <button id="stop-speaking" type="button">Stop</button>
+            </div>
+            <p id="file-status" class="file-status" aria-live="polite"></p>
+        </section>
+
+        <section id="history-view" class="tool-view" hidden>
+            <h2>Chat history</h2><p>Open an earlier conversation or remove chats you no longer need.</p>
+            <div id="history-list" class="saved-list"></div>
+        </section>
+        <section id="projects-view" class="tool-view" hidden>
+            <h2>Projects</h2><p>Use projects to organize your study conversations.</p>
+            <form id="project-form" class="tool-form"><input id="project-name" maxlength="60" placeholder="Project name, e.g. Biology revision" required><button type="submit">Add project</button></form>
+            <div id="project-list" class="saved-list"></div>
+        </section>
+        <section id="schedule-view" class="tool-view" hidden>
+            <h2>Study schedule</h2><p>Keep your upcoming study sessions in one place.</p>
+            <form id="schedule-form" class="tool-form schedule-form"><input id="schedule-title" maxlength="80" placeholder="What are you studying?" required><input id="schedule-date" type="datetime-local" required><button type="submit">Add session</button></form>
+            <div id="schedule-list" class="saved-list"></div>
+        </section>
+        <section id="toolkit-view" class="tool-view" hidden>
+            <span class="eyebrow">AI STUDY TOOLKIT</span>
+            <h2>Turn notes into practice.</h2><p>Paste a topic or your study notes, then generate a summary, quiz, or flashcards.</p>
+            <textarea id="study-source" class="study-source" maxlength="10000" placeholder="Paste your notes here. Example: Photosynthesis is the process plants use to convert light energy into chemical energy..."></textarea>
+            <div class="toolkit-actions"><button data-tool="summary">Summarize</button><button data-tool="quiz">Generate quiz</button><button data-tool="flashcards">Make flashcards</button></div>
+            <div id="toolkit-result" class="toolkit-result" aria-live="polite"><p>Your generated study material will appear here.</p></div>
+        </section>
+        <section id="progress-view" class="tool-view" hidden>
+            <span class="eyebrow">LEARNING PROGRESS</span><h2>Your study snapshot</h2><p>Track activity from this browser prototype and use it to decide what to review next.</p>
+            <div class="metric-grid progress-grid"><article class="metric-card"><span>Quizzes completed</span><strong id="quizzes-count">0</strong></article><article class="metric-card"><span>Questions answered</span><strong id="answers-count">0</strong></article><article class="metric-card"><span>Correct answers</span><strong id="correct-count">0</strong></article><article class="metric-card"><span>Accuracy</span><strong id="progress-accuracy">—</strong></article></div>
+            <article class="dashboard-panel"><h3>Recommended next step</h3><p id="progress-message">Create a quiz from your notes to begin tracking your practice.</p></article>
+        </section>
+        <section id="downloads-view" class="tool-view" hidden>
+            <h2>Download conversation</h2>
+            <p>Save the current chat as a document to review or share later.</p>
+            <div class="download-actions">
+                <button id="download-txt" type="button">Download TXT</button>
+                <button id="download-pdf" type="button">Download PDF</button>
+                <button id="download-docx" type="button">Download DOCX</button>
+            </div>
+        </section>
+        <section id="studio-view" class="tool-view" hidden>
+            <h2>Photo studio</h2>
+            <p>Upload an image, apply professional enhancements, then download the finished file.</p>
+            <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <label class="image-upload" for="image-input">Choose an image</label>
+            <div id="image-editor" class="image-editor" hidden>
+                <canvas id="image-canvas"></canvas>
+                <div class="image-controls">
+                    <label>Brightness <input id="image-brightness" type="range" min="50" max="150" value="100"></label>
+                    <label>Contrast <input id="image-contrast" type="range" min="50" max="150" value="100"></label>
+                    <label>Saturation <input id="image-saturation" type="range" min="0" max="200" value="100"></label>
+                    <label>Grayscale <input id="image-grayscale" type="range" min="0" max="100" value="0"></label>
+                </div>
+                <div class="download-actions">
+                    <button id="image-reset" type="button">Reset</button>
+                    <button id="download-png" type="button">Download PNG</button>
+                    <button id="download-jpg" type="button">Download JPG</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="mune.js"></script>
+    <script src="tools.js"></script>
+    <script type="module" src="Script.js"></script>
+</body>
+</html>
